@@ -1,6 +1,6 @@
 # Chinese Zodiac Clock
 
-A continuously running visual clock based on the Chinese zodiac and cyclical time.
+A clock based on the Chinese zodiac and cyclical time.
 
 This project is an experiment with time, symbols and perception.
 It explores time and the calendar as a repeating system rather than a linear sequence.  
