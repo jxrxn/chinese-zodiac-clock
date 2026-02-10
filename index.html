@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>The Chinese Zodiac Clock – Sexagenary Cycle, Ganzhi & Lìchūn</title>
+<!-- Styles -->
+<link rel="stylesheet" href="css/Chinese-Zodiac.css?v=2026-02-10a">
+<!-- App -->
+<script src="js/app.js?v=2026-02-10a" defer></script>
+</head>
+
+
+<body>
+
+<button id="infoBtn" class="infoBtnGlobal" type="button"
+        aria-expanded="false" aria-controls="infoPanel"
+        title="Info">
+  i
+</button>
+
+<div id="infoPanel" class="infoPanelGlobal" hidden>
+<div class="infoTitle">The Chinese Zodiac Clock</div>
+
+    <div class="infoText">
+    <p>
+        This visualization is based on the traditional
+        <i>Chinese sexagenary cycle</i> (Ganzhi 干支),
+        which combines two repeating sequences:
+        <i>10 Heavenly Stems</i> (element + yin/yang)
+        and <i>12 Earthly Branches</i> (the zodiac animals).
+        Each year is defined by a unique stem–branch pair,
+        and the complete pattern repeats every <i>60&nbsp;years</i>. 
+        The outer ring shows the complete cycle,
+        while the inner rings show the elemental and zodiac animal cycles.
+    </p>
+
+    <p>
+        Year boundaries:<br>
+        <b>Chinese New Year</b> follows the traditional lunisolar calendar
+        and is commonly used in popular zodiac traditions.<br>
+        <b>Lìchūn (立春)</b>, “Start of Spring”, is one of the
+        <i>24 Solar Terms</i> (二十四节气) and marks the beginning of the
+        solar year used in many BaZi systems.
+        It is an <i>astronomical moment</i>, defined by the Sun’s position,
+        and does not fall on a fixed calendar date.
+    </p>
+
+<p>
+  Sources:<br>
+  Chinese New Year dates, calendar conversion tables, and Astronomical definition of the 24 Solar Terms from the:
+  <a href="https://www.hko.gov.hk/en/gts/time/conversion.htm"
+     target="_blank" rel="noopener">
+    Hong Kong Observatory
+  </a>
+</p>
+    </div>
+</div>
+
+<div class="wrap">
+  <div class="wheelViewport">
+  <svg viewBox="0 0 900 900" aria-label="Zodiakringar">
+
+    <defs>
+    <filter id="halo" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="0" stdDeviation="2.2" flood-color="#f3f3f3" flood-opacity="1"/>
+        <feDropShadow dx="0" dy="0" stdDeviation="2.2" flood-color="#f3f3f3" flood-opacity="1"/>
+    </filter>
+    </defs>
+
+    <!-- Ringlinjer -->
+    <circle id="ring0" class="ringLine" cx="450" cy="450"></circle>
+    <circle id="ring1" class="ringLine" cx="450" cy="450"></circle>
+    <circle id="ring2" class="ringLine" cx="450" cy="450"></circle>
+    <circle id="ring3" class="ringLine" cx="450" cy="450"></circle>
+    <circle id="ring4" class="ringLine" cx="450" cy="450"></circle>
+
+    <!-- Fokusrektangel -->
+    <rect id="focusBox" class="focusBox" rx="14" ry="14"></rect>
+
+    <!-- Bakgrundssektorer (element-färger) -->
+    <g id="elementSectors"></g>
+    <g id="cycleSectors"></g>
+
+    <!-- Delare (roterar med respektive ring) -->
+    <g id="elementTicks"></g>
+    <g id="yyTicks"></g>
+    <g id="animalTicks"></g>
+    <g id="cycleTicks"></g>
+
+    <!-- Ringinnehåll -->
+    <g id="elementsRing"></g>
+    <g id="yyRing"></g>
+    <g id="animalsRing"></g>
+    <g id="cycleRing"><g id="cycleTexts"></g></g>
+
+    <!-- Etiketter för perioder -->
+    <g id="cycleLabels"></g>
+  </svg>
+</div>
+
+<div class="ui">
+
+  <h1 class="visuallyHidden">The Chinese Zodiac Clock</h1>
+
+  <!-- 1. Rubrik -->
+  <div id="result" class="title"></div>
+
+  <!-- 2. Datum -->
+  <div class="row rowDate">
+    <label>Year<select id="year"></select></label>
+    <label>Month<select id="month"></select></label>
+    <label>Day<select id="day"></select></label>
+  </div>
+
+  <!-- 3. Text / info -->
+  <div class="metaWrap">
+    <div id="meta"></div>
+  </div>
+
+  <!-- 4. Nederkant: mode + export -->
+  <div class="row rowBottom">
+    <label>Symbols
+      <select id="mode">
+        <option value="emoji">Emoji</option>
+        <option value="hanzi">Chinese</option>
+      </select>
+    </label>
+
+    <label>Boundary
+      <select id="boundary">
+        <option value="cny">CNY</option>
+        <option value="lichun">Lìchūn</option>
+      </select>
+    </label>
+
+    <button id="exportText" class="btn exportBtn">COPY</button>
+  </div>
+
+</div>
+
+</body>
+</html>
