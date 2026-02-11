@@ -1,12 +1,8 @@
-
-
-
-https://github.com/user-attachments/assets/e1c904f6-8f73-4506-90e9-7eda1aaf52a7
-
-
 # Chinese Zodiac Clock
 
 A clock based on the Chinese zodiac and cyclical time.
+
+https://github.com/user-attachments/assets/e1c904f6-8f73-4506-90e9-7eda1aaf52a7
 
 This project is an experiment with time, symbols and perception.
 It explores time and the calendar as a repeating system rather than a linear sequence.  
