@@ -307,8 +307,6 @@ const yyRing       = document.getElementById('yyRing');
 const animalsRing  = document.getElementById('animalsRing');
 const cycleRing    = document.getElementById('cycleRing');
 
-const cycleTexts   = document.getElementById('cycleTexts');
-
 const elementSectors = document.getElementById('elementSectors');
 const cycleSectors   = document.getElementById('cycleSectors');
 
@@ -317,6 +315,7 @@ const cycleLabels  = document.getElementById('cycleLabels');
 const elementTicks = document.getElementById('elementTicks');
 const yyTicks      = document.getElementById('yyTicks');
 const animalTicks  = document.getElementById('animalTicks');
+const cycleTicks   = document.getElementById('cycleTicks');
 
 const focusBox     = document.getElementById('focusBox');
 
@@ -999,34 +998,35 @@ function drawCyclePeriodLabels(zodiacYear){
 /* ===================== UI ===================== */
 const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-function populate(){
-  const ysel=document.getElementById('year');
-  ysel.innerHTML='';
+const year  = document.getElementById('year');
+const month = document.getElementById('month');
+const day   = document.getElementById('day');
 
-  // IMPORTANT: väljbarhet 1900–2100 (oavsett tabellens innehåll)
+function populate(){
+  year.innerHTML = '';
   for(let y = 1900; y <= 2100; y++){
-    ysel.add(new Option(y, y));
+    year.add(new Option(y, y));
   }
 
-  const msel=document.getElementById('month');
-  msel.innerHTML='';
-  MONTHS_EN.forEach((m,i)=> msel.add(new Option(m, i+1)));
+  month.innerHTML = '';
+  MONTHS_EN.forEach((m, i) => month.add(new Option(m, i + 1)));
 }
 
-function populateDays(year, month, selectedDay){
-  const dsel=document.getElementById('day');
-  dsel.innerHTML='';
-  const dim = new Date(year, month, 0).getDate();
+function populateDays(y, m, selectedDay){
+  day.innerHTML = '';
+  const dim = new Date(y, m, 0).getDate();
   const safe = Math.min(selectedDay, dim);
-  for(let d=1; d<=dim; d++){
-    dsel.add(new Option(d, d, false, d===safe));
+
+  for(let d = 1; d <= dim; d++){
+    day.add(new Option(d, d, false, d === safe));
   }
 }
 
 function syncDays(){
-  const y=+year.value, m=+month.value;
+  const y = +year.value;
+  const m = +month.value;
   const currentDay = +day.value || 1;
-  populateDays(y,m,currentDay);
+  populateDays(y, m, currentDay);
 }
 
 /* ===================== MAIN UPDATE ===================== */
@@ -1242,17 +1242,19 @@ if(window.visualViewport){
 
 // BFCache: när man kommer tillbaka kan SVG/emoji glappa → tvinga relayout + repaint
 window.addEventListener('pageshow', (e) => {
-  // kör alltid, men extra viktigt om e.persisted === true
   requestAnimationFrame(() => {
     refreshRingGlyphs();
     applyTransforms();
     relayout();
 
     // liten repaint-knuff (iOS/Safari)
-    const prev = svg?.style.opacity;
-    if(svg){
-      svg.style.opacity = '0.999';
-      requestAnimationFrame(() => { svg.style.opacity = prev || '1'; });
+    const svgEl = document.querySelector('.wheelViewport svg');
+    if(svgEl){
+      const prev = svgEl.style.opacity;
+      svgEl.style.opacity = '0.999';
+      requestAnimationFrame(() => {
+        svgEl.style.opacity = prev || '1';
+      });
     }
   });
 });
@@ -1283,11 +1285,6 @@ buildAnimalsStatic();
 
 // Bygg 60-årsringen DOM EN GÅNG (ingen rebuild senare)
 initCycleRing();
-
-const year = document.getElementById('year');
-const month = document.getElementById('month');
-const day = document.getElementById('day');
-
 
 // Default mode
 const mode = document.getElementById('mode');
@@ -1380,42 +1377,121 @@ document.addEventListener('click', (e) => {
   if(!infoOpen) return;
   if(infoPanel.contains(e.target)) return;
   if(infoBtn.contains(e.target)) return;
-
   setInfoOpen(false);
 });
 
 /* ESC-tangent stänger */
 document.addEventListener('keydown', (e) => {
   if(!infoOpen) return;
-  if(e.key === 'Escape'){
-    setInfoOpen(false);
-  }
+  if(e.key === 'Escape') setInfoOpen(false);
 });
 
-const today = new Date();
-year.value = today.getFullYear();
-month.value = today.getMonth() + 1;
-populateDays(+year.value, +month.value, today.getDate());
+// Initiera dropdowns med dagens datum (EN gång)
+{
+  const t = new Date();
+  year.value  = t.getFullYear();
+  month.value = t.getMonth() + 1;
+  populateDays(+year.value, +month.value, t.getDate());
+}
 
-// Förfyll 60-årsringen med samma år som dropdown visar
+// Förfyll 60-årsringen med samma år som dropdown visar (EN gång)
 updateCycleRing(+year.value);
 refreshRingGlyphs();
 
+// Resize/orientation listeners (EN gång)
 window.addEventListener('resize', () => requestAnimationFrame(relayout));
 window.addEventListener('orientationchange', () => setTimeout(relayout, 50));
+
+/* =========================================================
+   DATE BOUNDARY AUTO-UPDATE (midnight + wake), FULL SYNC
+========================================================= */
+
+let lastDateKey = new Date().toDateString();
+let midnightTimer = null;
+let isAutoUpdatingDate = false;
+
+function msUntilNextMidnight(){
+  const now  = new Date();
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0,0,0,0);
+  return Math.max(250, next - now);
+}
+
+async function applyTodayEverywhere(){
+  if(isAutoUpdatingDate) return;
+  isAutoUpdatingDate = true;
+  try{
+    const t = new Date();
+
+    // 1) Uppdatera dropdowns
+    year.value  = t.getFullYear();
+    month.value = t.getMonth() + 1;
+    populateDays(+year.value, +month.value, t.getDate());
+
+    // 2) Uppdatera ringar/glypher
+    updateCycleRing(+year.value);
+    refreshRingGlyphs();
+
+    // 3) Full render + layout
+    await update(false);
+    layoutMobileHalfWheel();
+    requestAnimationFrame(relayout);
+  } finally {
+    isAutoUpdatingDate = false;
+  }
+}
+
+async function handleDateBoundaryIfNeeded(){
+  const key = new Date().toDateString();
+  if(key !== lastDateKey){
+    lastDateKey = key;
+    await applyTodayEverywhere();
+  }
+}
+
+function scheduleMidnightWatcher(){
+  if(midnightTimer) clearTimeout(midnightTimer);
+  midnightTimer = setTimeout(async () => {
+    await handleDateBoundaryIfNeeded();
+    scheduleMidnightWatcher();
+  }, msUntilNextMidnight());
+}
+
+// När man återvänder till fliken (mobiler pausar timers)
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden) handleDateBoundaryIfNeeded();
+});
+window.addEventListener('focus', () => handleDateBoundaryIfNeeded());
+
+/* =========================================================
+   APP START
+========================================================= */
 
 (async () => {
   applyTransforms();
   await update(false);
   layoutMobileHalfWheel();
 
-  year.onchange  = async () => { syncDays(); await update(true); };
+  scheduleMidnightWatcher();
+  handleDateBoundaryIfNeeded();
+
+  year.onchange = async () => {
+    syncDays();
+    await update(true);
+  };
+
   mode.onchange = async () => {
     state.mode = mode.value;
     refreshRingGlyphs();
     await update(false);
     layoutMobileHalfWheel();
   };
-  month.onchange = async () => { syncDays(); await update(true); };
-  day.onchange   = async () => { await update(true); };
+
+  month.onchange = async () => {
+    syncDays();
+    await update(true);
+  };
+
+  day.onchange = async () => {
+    await update(true);
+  };
 })();
