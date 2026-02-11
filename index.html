@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="description" content="Explore the Chinese Zodiac Clock – an interactive visualization of Ganzhi (sexagenary cycle), zodiac animals, elements, yin-yang, and year boundaries from 1900–2100.">
 <title>The Chinese Zodiac Clock – Sexagenary Cycle, Ganzhi & Lìchūn</title>
 <!-- Styles -->
 <link rel="stylesheet" href="css/Chinese-Zodiac.css?v=2026-02-10a">
@@ -57,9 +58,10 @@
     </div>
 </div>
 
+<main id="main" aria-labelledby="pageTitle">
 <div class="wrap">
   <div class="wheelViewport">
-  <svg viewBox="0 0 900 900" aria-label="Zodiakringar">
+  <svg viewBox="0 0 900 900" aria-label="Zodiak Rings">
 
     <defs>
     <filter id="halo" x="-30%" y="-30%" width="160%" height="160%">
@@ -101,7 +103,7 @@
 
 <div class="ui">
 
-  <h1 class="visuallyHidden">The Chinese Zodiac Clock</h1>
+  <h1 id="pageTitle" class="visuallyHidden">The Chinese Zodiac Clock</h1>
 
   <!-- 1. Rubrik -->
   <div id="result" class="title"></div>
@@ -138,6 +140,7 @@
   </div>
 
 </div>
+</main>
 
 </body>
 </html>
