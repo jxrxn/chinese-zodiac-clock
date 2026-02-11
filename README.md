@@ -1,3 +1,9 @@
+
+
+
+https://github.com/user-attachments/assets/e1c904f6-8f73-4506-90e9-7eda1aaf52a7
+
+
 # Chinese Zodiac Clock
 
 A clock based on the Chinese zodiac and cyclical time.
