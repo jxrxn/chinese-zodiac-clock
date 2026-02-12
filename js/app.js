@@ -1409,6 +1409,7 @@ window.addEventListener('orientationchange', () => setTimeout(relayout, 50));
 let lastDateKey = new Date().toDateString();
 let midnightTimer = null;
 let isAutoUpdatingDate = false;
+let followToday = true; // true = vi följer "idag" tills användaren ändrar datum manuellt
 
 function msUntilNextMidnight(){
   const now  = new Date();
@@ -1420,6 +1421,8 @@ async function applyTodayEverywhere(){
   if(isAutoUpdatingDate) return;
   isAutoUpdatingDate = true;
   try{
+    followToday = true;
+
     const t = new Date();
 
     // 1) Uppdatera dropdowns
@@ -1444,7 +1447,9 @@ async function handleDateBoundaryIfNeeded(){
   const key = new Date().toDateString();
   if(key !== lastDateKey){
     lastDateKey = key;
-    await applyTodayEverywhere();
+    if(followToday){
+      await applyTodayEverywhere();
+    }
   }
 }
 
@@ -1475,6 +1480,7 @@ window.addEventListener('focus', () => handleDateBoundaryIfNeeded());
   handleDateBoundaryIfNeeded();
 
   year.onchange = async () => {
+    followToday = false;
     syncDays();
     await update(true);
   };
@@ -1487,11 +1493,13 @@ window.addEventListener('focus', () => handleDateBoundaryIfNeeded());
   };
 
   month.onchange = async () => {
+    followToday = false;
     syncDays();
     await update(true);
   };
 
   day.onchange = async () => {
+    followToday = false;
     await update(true);
   };
 })();
