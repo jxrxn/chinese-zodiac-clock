@@ -1068,10 +1068,10 @@ async function update(animated = true) {
 
     const boundaryLabel =
       state.yearBoundary === 'lichun'
-        ? 'Lìchūn (BaZi)'
+        ? 'Lìchūn, BaZi'
         : 'Chinese New Year';
 
-    const boundarySource = state.yearBoundary === 'lichun' ? '' : ' (Hong Kong Observatory)';
+    const boundarySource = ' (Hong Kong Observatory)';
 
     meta.innerHTML =
       `Zodiac year: ${zodiacYear}<br>` +
@@ -1225,7 +1225,7 @@ function layoutMobileHalfWheel() {
 
   // translateY(-50%) är “baseline” från CSS-positioneringen (top:50%)
   // Vi lägger dy som extra offset. translateZ(0) kan hjälpa iOS att repain ta emoji-text.
-  svg.style.transform = `translate(${dx}px, calc(-50% + ${dy}px))`;
+  svg.style.transform = `translate(${dx}px, calc(-50% + ${dy}px)) translateZ(0)`;
 }
 
 function relayout() {
@@ -1234,49 +1234,23 @@ function relayout() {
   layoutMobileHalfWheel();
 }
 
-// iOS: adressfältet påverkar layout utan vanlig resize.
-// För att undvika “repaint-storm” (flimmer/puls) coalescar vi relayout till max 1 gång per frame,
-// och vi kör bara om viewport-mått faktiskt ändrats.
-let relayoutQueued = false;
-let lastVP = { vpW: 0, vpH: 0, vvW: 0, vvH: 0 };
-
-function relayoutSmart() {
-  if (relayoutQueued) return;
-  relayoutQueued = true;
-
-  requestAnimationFrame(() => {
-    relayoutQueued = false;
-
-    const vp = document.querySelector('.wheelViewport');
-    const vv = window.visualViewport;
-
-    const vpW = vp ? vp.clientWidth : 0;
-    const vpH = vp ? vp.clientHeight : 0;
-    const vvW = vv ? Math.round(vv.width) : 0;
-    const vvH = vv ? Math.round(vv.height) : 0;
-
-    // Kör bara om något faktiskt ändrats
-    if (vpW === lastVP.vpW && vpH === lastVP.vpH && vvW === lastVP.vvW && vvH === lastVP.vvH) return;
-    lastVP = { vpW, vpH, vvW, vvH };
-
-    relayout();
-  });
-}
-
+// iOS: adressfältet påverkar layout utan vanlig resize
 if (window.visualViewport) {
-  visualViewport.addEventListener('resize', relayoutSmart);
-  // visualViewport.scroll kan trigga extremt ofta på iOS (adressfält/bounce) → undvik.
-  // visualViewport.addEventListener('scroll', relayoutSmart);
+  visualViewport.addEventListener('resize', () => requestAnimationFrame(relayout));
+  visualViewport.addEventListener('scroll', () => requestAnimationFrame(relayout));
 }
-
-// Resize/orientation listeners (EN gång)
-window.addEventListener('resize', relayoutSmart);
-window.addEventListener('orientationchange', () => setTimeout(relayoutSmart, 50));
 
 window.addEventListener('pageshow', () => {
   requestAnimationFrame(() => {
     requestApplyToday();
-    relayoutSmart();
+
+    // liten repaint-knuff (iOS/Safari)
+    const svgEl = document.querySelector('.wheelViewport svg');
+    if (svgEl) {
+      const prev = svgEl.style.opacity;
+      svgEl.style.opacity = '0.999';
+      requestAnimationFrame(() => { svgEl.style.opacity = prev || '1'; });
+    }
   });
 });
 
